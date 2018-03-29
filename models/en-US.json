@@ -1,0 +1,116 @@
+{
+    "interactionModel":{
+        "languageModel":{
+            "invocationName":"okta rental",
+            "intents":[
+                {
+                  "name": "AMAZON.CancelIntent",
+                  "samples": []
+                },
+                {
+                  "name": "AMAZON.HelpIntent",
+                  "samples": []
+                },
+                {
+                  "name": "AMAZON.StopIntent",
+                  "samples": []
+                },
+                {
+                    "name":"HelloWorldIntent",
+                    "slots":[
+
+                    ],
+                    "samples":[
+                        "hello",
+                        "say hello",
+                        "say hello world"
+                    ]
+                },
+                {
+                    "name":"carsAvailableIntent",
+                    "slots":[
+
+                    ],
+                    "samples":[
+                        "cars available",
+                        "cars",
+                        "inventory"
+                    ]
+                },
+                {
+                    "name":"LoginIntent",
+                    "slots":[
+
+                    ],
+                    "samples":[
+                        "log me in",
+                        "login",
+                        "register"
+                    ]
+                },
+                {
+                    "name":"ReserveCarIntent",
+                    "slots":[
+                        {"name":"Car",
+                        "type":"Car"}],
+                    "samples":[
+                        "reserve {Car}"
+
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "Car",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "Toyota"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Jeep"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Earth"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Mars"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Jupiter"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Saturn"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Uranus"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Neptune"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Pluto"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
