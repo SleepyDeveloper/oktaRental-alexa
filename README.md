@@ -1,3 +1,4 @@
+![Okta Rental](images/image.png)
 # Okta Rental Car, Alexa Integration
 
 #### Integrate Okta Authorization Server with Amazon Alexa
