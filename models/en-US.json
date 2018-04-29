@@ -1,61 +1,48 @@
 {
-    "interactionModel":{
-        "languageModel":{
-            "invocationName":"okta rental",
-            "intents":[
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "okta rental",
+            "intents": [
                 {
-                  "name": "AMAZON.CancelIntent",
-                  "samples": []
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
                 },
                 {
-                  "name": "AMAZON.HelpIntent",
-                  "samples": []
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
                 },
                 {
-                  "name": "AMAZON.StopIntent",
-                  "samples": []
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
                 },
                 {
-                    "name":"HelloWorldIntent",
-                    "slots":[
-
-                    ],
-                    "samples":[
-                        "hello",
-                        "say hello",
-                        "say hello world"
-                    ]
-                },
-                {
-                    "name":"carsAvailableIntent",
-                    "slots":[
-
-                    ],
-                    "samples":[
+                    "name": "carsAvailableIntent",
+                    "slots": [],
+                    "samples": [
                         "cars available",
                         "cars",
                         "inventory"
                     ]
                 },
                 {
-                    "name":"LoginIntent",
-                    "slots":[
-
-                    ],
-                    "samples":[
+                    "name": "LoginIntent",
+                    "slots": [],
+                    "samples": [
                         "log me in",
                         "login",
                         "register"
                     ]
                 },
                 {
-                    "name":"ReserveCarIntent",
-                    "slots":[
-                        {"name":"Car",
-                        "type":"Car"}],
-                    "samples":[
+                    "name": "ReserveCarIntent",
+                    "slots": [
+                        {
+                            "name": "Car",
+                            "type": "Car"
+                        }
+                    ],
+                    "samples": [
                         "reserve {Car}"
-
                     ]
                 }
             ],

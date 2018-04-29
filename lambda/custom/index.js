@@ -1,125 +1,206 @@
-'use strict';
-var Alexa = require("alexa-sdk");
-var http = require("https");
+/* eslint-disable  func-names */
+/* eslint-disable  no-console */
+
+const Alexa = require('ask-sdk');
+const https = require('https');
 
 
-// For detailed tutorial on how to making a Alexa skill,
-// please visit us at http://alexa.design/build
-
-
-exports.handler = function(event, context) {
-    var alexa = Alexa.handler(event, context);
-    alexa.registerHandlers(handlers);
-    alexa.execute();
+const LaunchRequestHandlerWithoutAuthToken = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === "LaunchRequest" &&
+            handlerInput.requestEnvelope.session.user.accessToken == undefined;
+  }, handle(handlerInput) {
+    return handlerInput.responseBuilder
+      .speak('To start using this skill, please use the companion app to authenticate')
+      .withLinkAccountCard()
+      .getResponse();
+  }
 };
 
-var handlers = {
-    'LaunchRequest': function () {
-        if (this.event.session.user.accessToken == undefined) {
-            this.emit(':tellWithLinkAccountCard','to start using this skill, please use the companion app to authenticate');
-            return;
+const LaunchRequestHandlerWithAuthToken = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === "LaunchRequest" &&
+            handlerInput.requestEnvelope.session.user.accessToken;
+  },
+  handle(handlerInput) {
+    return handlerInput.responseBuilder
+      .speak('Your account is now connected to Okta Car Rental, you can ask for the inventory of cars, reserve cars and cancle reservations')
+      .getResponse();
+  }
+};
 
-        } else {
-            // console.log ( this.event.session.user.accessToken )
-            this.emit(':ask', 'Your Account is now Connected to Okta Car Rental, you can ask for an inventory of cars, reserve cars, and cancel reservations');
+const LoginHandler = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type == 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name == 'LoginIntent'
+  },
+  handle(handlerInput) {
+    return handlerInput.responseBuilder
+      .speak('to get a list of cars say cars, reserve car, or cancel reservation')
+      .getResponse();
+  }
+};
+
+const ReserveCarHandler = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+            handlerInput.requestEnvelope.request.intent.name === 'ReserveCarIntent';
+  },
+  handle(handlerInput) {
+    console.log('The car',handlerInput.requestEnvelope.request.intent.slots.Car.value)
+    return handlerInput.responseBuilder
+            .speak(`I have made a reservation for you to get ${handlerInput.requestEnvelope.request.intent.slots.Car.value} the confirmation number is rl7-q278`)
+            .getResponse();
+  }
+};
+
+const CarsAvailableHandler = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name === 'carsAvailableIntent';
+  },
+  handle(handlerInput) {
+    const accessToken = handlerInput.requestEnvelope.session.user.accessToken;
+    if (accessToken == undefined) {
+        return handlerInput.responseBuilder
+          .speak('To start using this skill, please use the companion app to authenticate')
+          .withLinkAccountCard()
+          .getResponse();      
+    } else {
+      
+      let options = {
+        "method": "GET",
+        "hostname": "zx3l5ejnmk.execute-api.us-east-1.amazonaws.com",
+        "port": null,
+        "path": "/dev/vehicles",
+        "headers": {
+          "authorization": "Bearer " + accessToken,
+          "cache-control": "no-cache"
         }
-        // this.emit(':ask','Welcome to Okta Car Rental. You and ask for available cars');
-    },
-    'ReserveCarIntent': function () {
-        console.log ( this.event.request.intent.slots.Car["value"] )
-        console.log ( this.event.request.intent.slots.Car["value"] )
-        // console.log ( this.event.request.ReserveCarIntent.valueOf("Car") )
-        // this.emit(':ask', 'You want to rent '+this.event.request.intent.slots)
-        this.emit(':ask', 'I have made a reservation for you to get a'+this.event.request.intent.slots.Car["value"]+", the confirmation number is rl7-q278")
-        // this.emit(':ask', 'You want to rent '+this.event.request.intent.slots.Cars.value);
-    },
-    'MyNameIsIntent': function () {
-        this.emit('SayHelloName');
-    },
-    'LoginIntent': function () {
-        this.emit(':ask','to get a list of cars say cars, reserve car, or cancel reservation');
-
-    },
-    'carsAvailableIntent': function () {
-
-        if (this.event.session.user.accessToken == undefined) {
-            this.emit(':emit','You must login to see available Cars');
-        } else {
-            var self = this;
-            function callback(self, string) {
-                self.response.speak('We have the following cars available: '+string).cardRenderer('we have cars !');
-                self.emit(':responseReady');
-            }
-            var http = require("https");
-            var options = {
-                "method": "GET",
-                "hostname": "pk5gzo4x02.execute-api.us-east-1.amazonaws.com",
-                "port": null,
-                "path": "/dev/vehicles",
-                "headers": {
-                    "authorization": "Bearer "+this.event.session.user.accessToken,
-                    "cache-control": "no-cache"
-                }
-            };
-
-            var req = http.request(options, function (res) {
-                var chunks = [];
-
-                res.on("data", function (chunk) {
-                    chunks.push(chunk);
-                });
-
-                res.on("end", function () {
-                    var body = Buffer.concat(chunks);
-                    var cars = body.toString();
-                    var carsObj = {}
-                    carsObj = JSON.parse(cars);
-                    var outputString = ""
-
-                    for (let item of carsObj.inventory) {
-                        outputString += item.make + " " + item.model+", ";
-                    }
-                    callback ( self, outputString )
-                });
-            });
-
-            req.end();
-
-
-        }
-    },
-    'SayHello': function () {
-        this.response.speak('Hello World!')
-                     .cardRenderer('hello world', 'hello world');
-        this.emit(':responseReady');
-    },
-    'SayHelloName': function () {
-        var name = this.event.request.intent.slots.name.value;
-        this.response.speak('Hello ' + name)
-            .cardRenderer('hello world', 'hello ' + name);
-        this.emit(':responseReady');
-    },
-    'SessionEndedRequest' : function() {
-        console.log('Session ended with reason: ' + this.event.request.reason);
-    },
-    'AMAZON.StopIntent' : function() {
-        this.response.speak('Bye');
-        this.emit(':responseReady');
-    },
-    'AMAZON.HelpIntent' : function() {
-        this.response.speak("You can try: 'alexa, hello world' or 'alexa, ask hello world my" +
-            " name is awesome Aaron'");
-        this.emit(':responseReady');
-    },
-    'AMAZON.CancelIntent' : function() {
-        this.response.speak('Bye');
-        this.emit(':responseReady');
-    },
-    'Unhandled' : function() {
-        this.response.speak("Sorry, I didn't get that. You can try: 'alexa, hello world'" +
-            " or 'alexa, ask hello world my name is awesome Aaron'");
+      };
+      
+      return new Promise((resolve, reject) => {
+        httpGet(options).then((response) => {
+          
+          console.log('the response', response);
+          let outputString = ""
+          for (let item of response.inventory) {
+              outputString += item.make + " " + item.model + ", ";
+          }
+          resolve(handlerInput.responseBuilder
+            .speak('We have the following cars available: ' + outputString)
+            .withSimpleCard('Okta Rental','we have cars !')
+            .getResponse());
+        }).catch((error) => {
+          return handlerInput.responseBuilder
+            .speak('There was an error connecting to the service')
+            .getResponse();
+        });
+      });
     }
+  }
 };
 
+const HelpHandler = {
+  canHandle(handlerInput) {
+    const request = handlerInput.requestEnvelope.request;
+    return request.type === 'IntentRequest'
+      && request.intent.name === 'AMAZON.HelpIntent';
+  },
+  handle(handlerInput) {
+    return handlerInput.responseBuilder
+      .speak(HELP_MESSAGE)
+      .reprompt(HELP_REPROMPT)
+      .getResponse();
+  },
+};
+
+const ExitHandler = {
+  canHandle(handlerInput) {
+    const request = handlerInput.requestEnvelope.request;
+    return request.type === 'IntentRequest'
+      && (request.intent.name === 'AMAZON.CancelIntent'
+        || request.intent.name === 'AMAZON.StopIntent');
+  },
+  handle(handlerInput) {
+    return handlerInput.responseBuilder
+      .speak(STOP_MESSAGE)
+      .getResponse();
+  },
+};
+
+const SessionEndedRequestHandler = {
+  canHandle(handlerInput) {
+    const request = handlerInput.requestEnvelope.request;
+    return request.type === 'SessionEndedRequest';
+  },
+  handle(handlerInput) {
+    console.log(`Session ended with reason: ${handlerInput.requestEnvelope.request.reason}`);
+
+    return handlerInput.responseBuilder.getResponse();
+  },
+};
+
+const ErrorHandler = {
+  canHandle() {
+    return true;
+  },
+  handle(handlerInput, error) {
+    console.log(`Error handled: ${error.message}`);
+
+    return handlerInput.responseBuilder
+      .speak('Sorry, an error occurred.')
+      .reprompt('Sorry, an error occurred.')
+      .getResponse();
+  },
+};
+
+const SKILL_NAME = 'Space Facts';
+const GET_FACT_MESSAGE = 'Here\'s your fact: ';
+const HELP_MESSAGE = 'You can say tell me a space fact, or, you can say exit... What can I help you with?';
+const HELP_REPROMPT = 'What can I help you with?';
+const STOP_MESSAGE = 'Goodbye!';
+
+function httpGet(options) {
+  console.log('options', options);
+  return new Promise(((resolve, reject) => {
+    const request = https.request(options, (response) => {
+      response.setEncoding('utf8');
+      let returnData = '';
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return reject(new Error(`${response.statusCode}: ${response.req.getHeader('host')} ${response.req.path}`));
+      }
+
+      response.on('data', (chunk) => {
+        returnData += chunk;
+      });
+
+      response.on('end', () => {
+        resolve(JSON.parse(returnData));
+      });
+
+      response.on('error', (error) => {
+        reject(error);
+      });
+    });
+    request.end();
+  }));
+} 
 
 
+const skillBuilder = Alexa.SkillBuilders.standard();
+
+exports.handler = skillBuilder
+  .addRequestHandlers(
+    LaunchRequestHandlerWithoutAuthToken,
+    LaunchRequestHandlerWithAuthToken,
+    LoginHandler,
+    ReserveCarHandler,
+    CarsAvailableHandler,
+    HelpHandler,
+    ExitHandler,
+    SessionEndedRequestHandler
+  )
+  .addErrorHandlers(ErrorHandler)
+  .lambda();
